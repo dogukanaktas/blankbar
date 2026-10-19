@@ -1,0 +1,51 @@
+name: Compatibility report
+description: Tell us whether blankbar works on your Mac, whether it did or not.
+labels: [compatibility]
+body:
+  - type: input
+    id: model
+    attributes:
+      label: Mac model
+      description: "Output of: sysctl -n hw.model"
+      placeholder: MacBookPro17,1
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      description: "Output of: sw_vers -productVersion"
+      placeholder: "26.5"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: blankbar version
+      description: "Output of: blankbar version"
+    validations:
+      required: true
+  - type: dropdown
+    id: result
+    attributes:
+      label: Result
+      options:
+        - Works, including after sleep and restart
+        - Turns off, but lights up again after sleep or restart
+        - Does not turn off
+        - Error message
+    validations:
+      required: true
+  - type: dropdown
+    id: touches
+    attributes:
+      label: Does the dark Touch Bar still react to touches (for example Escape)?
+      options:
+        - Not tested
+        - "Yes"
+        - "No"
+  - type: textarea
+    id: output
+    attributes:
+      label: Output of `blankbar status`, and any error
+      render: text
