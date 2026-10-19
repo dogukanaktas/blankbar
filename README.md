@@ -6,7 +6,8 @@ If your Touch Bar flickers, flashes or shows lines, the panel is failing. macOS 
 setting to turn it off. blankbar does, with one command.
 
 - No `sudo`, no System Integrity Protection changes
-- Stays off after sleep and restart
+- Stays off after sleep and restart, using a tiny background agent: `blankbar` in
+  Activity Monitor, `io.github.dogukanaktas.blankbar` in `~/Library/LaunchAgents`
 - No network access, no dependencies
 - Undo everything with one command
 
