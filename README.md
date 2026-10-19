@@ -66,6 +66,9 @@ If the screenshot shows the glitch, it is a software problem: restart and update
 
 ## Compatibility
 
+For MacBook Pro models with a Touch Bar, sold from 2016 to 2022. Other Macs don't have
+one, and blankbar won't run on them.
+
 | Mac | Status |
 | --- | --- |
 | 13-inch MacBook Pro M1 (2020), macOS 26 | Tested |
