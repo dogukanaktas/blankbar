@@ -1,152 +1,111 @@
 # blankbar
 
-Turn the MacBook Pro Touch Bar off, and keep it off.
+Turn off the MacBook Pro Touch Bar, and keep it off.
 
-```sh
-brew install dogukanaktas/tap/blankbar
-blankbar install
-```
+If your Touch Bar flickers, flashes or shows lines, the panel is failing. macOS has no
+setting to turn it off. blankbar does, with one command.
 
-macOS has no setting for this. It matters when the Touch Bar's panel fails: it
-flickers, flashes or shows lines, and the only real fix is a hardware repair. With the
-bar dark, the fault is invisible.
-
-- **No sudo.** Everything stays in your user account.
-- **No System Integrity Protection changes**, unlike older tools that disable the bar.
-- **No network access**, no telemetry, no dependencies. A few hundred lines of Swift you can read in one sitting.
-- **Survives sleep and login.** A small background agent switches the bar off again
-  within milliseconds whenever macOS lights it.
-- **Fully reversible** with one command.
-
-## Is it a hardware fault?
-
-While the fault is visible, take a picture of what macOS is drawing to the bar:
-
-```sh
-screencapture -b ~/Desktop/touchbar.png
-```
-
-- **The picture is clean:** the fault is in the panel, its cable or the display
-  controller. Software cannot repair it; blankbar hides it.
-- **The picture shows the glitch:** macOS is drawing it. Restart and update macOS first.
+- No `sudo`, no System Integrity Protection changes
+- Stays off after sleep and restart
+- No network access, no dependencies
+- Undo everything with one command
 
 ## Install
 
-### Homebrew
-
 ```sh
 brew install dogukanaktas/tap/blankbar
 blankbar install
 ```
 
-Homebrew installs a prebuilt package on Apple Silicon Macs with macOS 14 or later and
-Intel Macs with macOS 15 or later. On other versions it compiles blankbar, which takes
-about a minute and needs the Command Line Tools (`xcode-select --install`).
+That's it. The Touch Bar goes dark and stays dark.
 
-### From source
+<details>
+<summary>Without Homebrew</summary>
 
-Needs Xcode's Command Line Tools 14 or later (`xcode-select --install`), so macOS 12.5
-or later.
+Needs Xcode Command Line Tools (`xcode-select --install`).
 
 ```sh
 git clone https://github.com/dogukanaktas/blankbar.git
 cd blankbar
-make install        # installs to ~/.local/bin; PREFIX=/some/dir to change
+make install          # installs to ~/.local/bin
 blankbar install
 ```
 
-`blankbar install` switches the bar off and adds a launch agent,
-`~/Library/LaunchAgents/io.github.dogukanaktas.blankbar.plist`, that keeps it off.
-macOS shows a "Background Items Added" notification for it; that is expected.
+</details>
 
 ## Use
 
 | Command | What it does |
 | --- | --- |
-| `blankbar install` | Turn the bar off now and keep it off after sleep and login |
-| `blankbar on` | Turn the bar on. It stays on, even after a restart, until `blankbar off` |
-| `blankbar off` | Turn the bar off again (and resume keeping it off) |
-| `blankbar status` | Show whether the bar is on and whether the agent is running |
-| `blankbar uninstall` | Turn the bar on and remove the agent |
-
-Without `install`, `blankbar off` and `blankbar on` work once, until the next sleep or
-restart.
-
-Exit codes follow sysexits(3): `0` success, `64` usage error, `69` unsupported Mac or
-macOS, `70` the Touch Bar refused the request, `1` anything else.
+| `blankbar install` | Turn the Touch Bar off and keep it off |
+| `blankbar on` | Turn it back on (stays on until `blankbar off`) |
+| `blankbar off` | Turn it off again |
+| `blankbar status` | Show the current state |
+| `blankbar uninstall` | Turn it on and remove the background agent |
 
 ## Uninstall
 
-Run `blankbar uninstall` **before** removing the command, so the agent goes with it:
-
 ```sh
 blankbar uninstall
-brew uninstall blankbar     # or: make uninstall, in the source folder
+brew uninstall blankbar      # or: make uninstall
 ```
 
-If the command was removed first, delete the agent by hand:
+Run `blankbar uninstall` first, so the background agent is removed too.
+
+## Is it really a hardware fault?
+
+While the bar is glitching, take a screenshot of it:
 
 ```sh
-launchctl bootout gui/$(id -u)/io.github.dogukanaktas.blankbar
-launchctl enable gui/$(id -u)/io.github.dogukanaktas.blankbar
-rm ~/Library/LaunchAgents/io.github.dogukanaktas.blankbar.plist
+screencapture -b ~/Desktop/touchbar.png
 ```
 
-Then restart the Mac to light the Touch Bar again.
+If the screenshot looks normal, the panel itself is faulty and blankbar will hide it.
+If the screenshot shows the glitch, it is a software problem: restart and update macOS.
 
 ## Compatibility
 
-| Mac | macOS | Status |
-| --- | --- | --- |
-| 13-inch MacBook Pro, M1, 2020 (MacBookPro17,1) | 26.5 | Tested |
-| 13-inch MacBook Pro, M1, 2020 (MacBookPro17,1) | 15.5 | Tested by [touchbar-off](https://github.com/gbili/touchbar-off) |
-| 13-inch MacBook Pro, M2, 2022 (Mac14,7) | — | Untested |
-| Intel MacBook Pro with Touch Bar, 2016–2020 | — | Untested |
+| Mac | Status |
+| --- | --- |
+| 13-inch MacBook Pro M1 (2020), macOS 26 | Tested |
+| 13-inch MacBook Pro M2 (2022) | Should work, untested |
+| Intel MacBook Pro with Touch Bar (2016–2020) | Untested |
 
-blankbar refuses to run on a Mac without a Touch Bar, on a macOS that lacks the
-interfaces it needs, and as root, with a clear error instead of misbehaving. It also
-refuses to install the agent if another user could replace the blankbar binary. If you try it on an
-untested Mac, please [open a compatibility report](https://github.com/dogukanaktas/blankbar/issues/new?template=compatibility.yml),
+Tried it on another Mac? Please
+[report it](https://github.com/dogukanaktas/blankbar/issues/new?template=compatibility.yml),
 whether it worked or not.
 
-## Limits
+## Good to know
 
-- **Private frameworks.** macOS has no public API for this, so blankbar uses the ones
-  macOS itself uses. A macOS update can break it; it can never be in the App Store.
-- **Only after login.** The bar is lit at the login screen, and may flash briefly at
-  wake before the agent reacts.
-- **No Touch Bar keys while it is dark.** Brightness, volume and media controls are in
-  Control Center. Whether a dark bar still registers touches (including Escape on
-  models where it is part of the Touch Bar) is untested; you can map Caps Lock to
-  Escape under System Settings > Keyboard > Keyboard Shortcuts > Modifier Keys.
-- **Not a medical safeguard.** If a flickering bar is a health risk for you (for
-  example photosensitive epilepsy), do not rely on software alone: cover the bar or
+- **The bar's keys are gone while it is off.** Use Control Center for brightness and
+  volume. If your Mac's Escape key is on the Touch Bar, you can map Caps Lock to Escape
+  in System Settings > Keyboard > Keyboard Shortcuts > Modifier Keys.
+- **It is lit at the login screen**, and may flash for a moment after wake.
+- **It uses private macOS frameworks**, because there is no public API for this. A
+  future macOS update could break it; blankbar then stops with a clear error.
+- **Not a medical safeguard.** If flicker is a health risk for you, cover the bar or
   have it repaired.
 
 ## How it works
 
-- **`DFRBrightness.framework`** has a class `DFRBrightnessClient` with `turnOff` and
-  `turnOn`, the same class macOS's `TouchBarServer` uses for idle dimming.
-- **`DFRFoundation.framework`** exports `DFRGetStatus()`, a bit mask where bit `0x4`
-  means the panel is dark, and `DFRRegisterStatusChangeCallback()`, which reports every
-  change. The agent uses it to switch the bar off the moment something lights it.
+blankbar calls the same private frameworks macOS uses to dim the Touch Bar
+(`DFRBrightness` and `DFRFoundation`). A small background agent, installed in
+`~/Library/LaunchAgents`, listens for the bar lighting up (after wake or login) and
+turns it off again within milliseconds.
 
-The agent ignores changes while another user's session is on screen (fast user
-switching), and stops fighting the system if the bar is relit more than 10 times a
-minute, so a future macOS change cannot turn it into a busy loop. It logs to the
-unified log:
+Logs:
 
 ```sh
 log show --info --last 1h --predicate 'subsystem == "io.github.dogukanaktas.blankbar"'
 ```
 
+See [SECURITY.md](SECURITY.md) for exactly what it touches on your Mac.
+
 ## Credits
 
-The approach, using `DFRBrightnessClient` and the DFRFoundation status callback, comes
-from [gbili/touchbar-off](https://github.com/gbili/touchbar-off) by Guillermo Pages
-(MIT). blankbar reworks it as a command-line tool with Homebrew distribution, a
-persistent on/off state, a status command, hardware checks and tests.
+Based on the approach in [gbili/touchbar-off](https://github.com/gbili/touchbar-off)
+by Guillermo Pages.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT
