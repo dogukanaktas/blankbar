@@ -1,0 +1,40 @@
+name: Bug report
+description: Something does not work as the README says.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. blankbar install
+        2. Sleep and wake the Mac
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Mac model, macOS version, blankbar version
+      description: "sysctl -n hw.model; sw_vers -productVersion; blankbar version"
+    validations:
+      required: true
+  - type: dropdown
+    id: install
+    attributes:
+      label: Installed with
+      options: [Homebrew, make install, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Output of `blankbar status` and the last hour of logs
+      description: "log show --info --last 1h --predicate 'subsystem == \"io.github.dogukanaktas.blankbar\"'"
+      render: text

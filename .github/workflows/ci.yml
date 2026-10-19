@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-14, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Swift version
+        run: swift --version
+      - name: Build (warnings are errors)
+        run: swift build -c release -Xswiftc -warnings-as-errors
+      - name: Test
+        run: swift test
+      - name: Build for Intel and Apple Silicon
+        run: swift build -c release --arch arm64 --arch x86_64
+      - name: Smoke test
+        run: |
+          bin=$(swift build -c release --show-bin-path)/blankbar
+          "$bin" --version | grep -qx "blankbar $(sed -n 's/.*version = "\(.*\)"/\1/p' Sources/BlankBarCore/BlankBar.swift)"
+          "$bin" help >/dev/null
+          # CI runners have no Touch Bar: commands that need one must exit 69, not crash.
+          set +e
+          "$bin" off; test $? -eq 69 || exit 1
+          "$bin" bogus; test $? -eq 64 || exit 1
+          "$bin" status

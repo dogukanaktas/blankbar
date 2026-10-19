@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions: {}
+
+jobs:
+  verify:
+    runs-on: macos-15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Check the tag matches the version and the changelog
+        run: |
+          code=$(sed -n 's/.*version = "\(.*\)"/\1/p' Sources/BlankBarCore/BlankBar.swift)
+          tag=${GITHUB_REF_NAME#v}
+          if [ "$code" != "$tag" ]; then
+            echo "::error::tag v$tag does not match BlankBar.version $code"
+            exit 1
+          fi
+          grep -q "^## \[$tag\]" CHANGELOG.md || { echo "::error::CHANGELOG.md has no [$tag] section"; exit 1; }
+      - name: Build and test
+        run: |
+          swift build -c release -Xswiftc -warnings-as-errors
+          swift test
+
+  release:
+    needs: verify
+    runs-on: ubuntu-latest
+    # The only job with write access; it runs no project code, only awk and gh.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          tag=${GITHUB_REF_NAME#v}
+          # The CHANGELOG section for this version, without its heading.
+          awk -v v="$tag" '$0 ~ "^## \\[" v "\\]" {on=1; next} /^## \[/ {on=0} /^\[.*\]: / {on=0} on' CHANGELOG.md > notes.md
+          test -s notes.md
+          gh release create "$GITHUB_REF_NAME" --repo "$REPO" --title "blankbar $tag" --notes-file notes.md --verify-tag
