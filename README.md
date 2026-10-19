@@ -13,6 +13,8 @@ setting to turn it off. blankbar does, with one command.
 
 ## Install
 
+### With Homebrew
+
 ```sh
 brew install dogukanaktas/tap/blankbar
 blankbar install
@@ -20,8 +22,7 @@ blankbar install
 
 That's it. The Touch Bar goes dark and stays dark.
 
-<details>
-<summary>Without Homebrew</summary>
+### Without Homebrew
 
 Needs Xcode Command Line Tools (`xcode-select --install`).
 
@@ -31,8 +32,6 @@ cd blankbar
 make install          # installs to ~/.local/bin
 blankbar install
 ```
-
-</details>
 
 ## Use
 
